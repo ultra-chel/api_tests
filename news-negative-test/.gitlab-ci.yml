@@ -1,0 +1,421 @@
+stages:
+- pipelines
+- common
+- static-code-analysis
+- api
+- security
+- backend
+- frontend
+- validator-post
+- packages-in-projects
+- tag
+pipelines:
+  stage: pipelines
+  script: /pub/ci/pipelines/pipelines.py
+  only:
+  - branches
+  - merge_requests
+ci-config-check:
+  stage: common
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-config-check:latest
+  allow_failure: false
+  only:
+  - branches
+  - merge_requests
+changelog-check:
+  stage: common
+  script: /pub/ci/changelog/changelog.py
+  allow_failure: false
+  only:
+  - branches
+  - merge_requests
+validator-pre-global:
+  stage: static-code-analysis
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-validator-global:latest
+  allow_failure: false
+  only:
+  - branches
+  - merge_requests
+validator-pre-php:
+  stage: static-code-analysis
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-validator-php:latest
+  allow_failure: true
+  only:
+  - branches
+  - merge_requests
+validator-pre-js:
+  stage: static-code-analysis
+  variables:
+    CI_SUB_DIR: .
+    CI_EXTENSIONS: .js,.jsx
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-validator-js:latest
+  allow_failure: false
+  only:
+  - branches
+  - merge_requests
+validator-pre-css:
+  stage: static-code-analysis
+  variables:
+    CI_SUB_DIR: .
+    CI_EXTENSIONS: .
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-validator-css:latest
+  allow_failure: false
+  only:
+  - branches
+  - merge_requests
+validator-pre-json:
+  stage: static-code-analysis
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-validator-json:latest
+  allow_failure: false
+  only:
+  - branches
+  - merge_requests
+cpd-php:
+  stage: static-code-analysis
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-cpd-php:latest
+  allow_failure: true
+  only:
+  - branches
+  - merge_requests
+cpd-js-jsx:
+  stage: static-code-analysis
+  variables:
+    CI_SUB_DIR: .
+    CI_EXTENSIONS: js,jsx
+    CI_FORMAT: javascript
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-cpd-js-css:latest
+  allow_failure: true
+  only:
+  - branches
+  - merge_requests
+cpd-css:
+  stage: static-code-analysis
+  variables:
+    CI_SUB_DIR: .
+    CI_EXTENSIONS: less
+    CI_FORMAT: less
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-cpd-js-css:latest
+  allow_failure: true
+  only:
+  - branches
+  - merge_requests
+mnd-php:
+  stage: static-code-analysis
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-mnd-php:latest
+  allow_failure: true
+  only:
+  - branches
+  - merge_requests
+swagger:
+  stage: api
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-api-swagger:latest
+  allow_failure: true
+  only:
+  - branches
+  - merge_requests
+  except:
+  - master
+tests:
+  stage: api
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-api-tests:latest
+  allow_failure: true
+  only:
+  - branches
+  - merge_requests
+  except:
+  - master
+composer-advisories:
+  stage: security
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-composer-advisories:php72
+  allow_failure: true
+  only:
+  - branches
+  - merge_requests
+security-npm-audit:
+  stage: security
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-security-npm-audit:node10
+  allow_failure: true
+  only:
+  - branches
+  - merge_requests
+security-npm-outdated:
+  stage: security
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-security-npm-outdated:node10
+  allow_failure: true
+  only:
+  - branches
+  - merge_requests
+php7.2-mysql5.7:
+  stage: backend
+  variables:
+    DB_VERSION: mysql5.7
+    PHP_VERSION: php7.2
+    PT_VERSION: dev-yii_2.0.15
+  script: /pub/ci/backend/package.py
+  allow_failure: false
+  only:
+  - master
+  - tags
+  - merge_requests
+  when: on_success
+  artifacts:
+    expire_in: 1 week
+    paths:
+    - artifacts/*
+    when: on_failure
+php7.2-mysql8.0:
+  stage: backend
+  variables:
+    DB_VERSION: mysql8.0
+    PHP_VERSION: php7.2
+    PT_VERSION: dev-yii_2.0.15
+  script: /pub/ci/backend/package.py
+  allow_failure: false
+  only:
+  - master
+  - tags
+  - merge_requests
+  when: on_success
+  artifacts:
+    expire_in: 1 week
+    paths:
+    - artifacts/*
+    when: on_failure
+php7.2-pgsql9.5:
+  stage: backend
+  variables:
+    DB_VERSION: pgsql9.5
+    PHP_VERSION: php7.2
+    PT_VERSION: dev-yii_2.0.15
+  script: /pub/ci/backend/package.py
+  allow_failure: false
+  only:
+  - master
+  - tags
+  - merge_requests
+  when: on_success
+  artifacts:
+    expire_in: 1 week
+    paths:
+    - artifacts/*
+    when: on_failure
+php7.2-pgsql10:
+  stage: backend
+  variables:
+    DB_VERSION: pgsql10
+    PHP_VERSION: php7.2
+    PT_VERSION: dev-yii_2.0.15
+  script: /pub/ci/backend/package.py
+  allow_failure: false
+  only:
+  - master
+  - tags
+  - merge_requests
+  when: on_success
+  artifacts:
+    expire_in: 1 week
+    paths:
+    - artifacts/*
+    when: on_failure
+php7.3-mysql5.7:
+  stage: backend
+  variables:
+    DB_VERSION: mysql5.7
+    PHP_VERSION: php7.3
+    PT_VERSION: dev-yii_2.0.15
+  script: /pub/ci/backend/package.py
+  allow_failure: true
+  only:
+  - master
+  - tags
+  - merge_requests
+  when: on_success
+  artifacts:
+    expire_in: 1 week
+    paths:
+    - artifacts/*
+    when: on_failure
+php7.3-mysql8.0:
+  stage: backend
+  variables:
+    DB_VERSION: mysql8.0
+    PHP_VERSION: php7.3
+    PT_VERSION: dev-yii_2.0.15
+  script: /pub/ci/backend/package.py
+  allow_failure: true
+  only:
+  - master
+  - tags
+  - merge_requests
+  when: on_success
+  artifacts:
+    expire_in: 1 week
+    paths:
+    - artifacts/*
+    when: on_failure
+php7.3-pgsql9.5:
+  stage: backend
+  variables:
+    DB_VERSION: pgsql9.5
+    PHP_VERSION: php7.3
+    PT_VERSION: dev-yii_2.0.15
+  script: /pub/ci/backend/package.py
+  allow_failure: true
+  only:
+  - master
+  - tags
+  - merge_requests
+  when: on_success
+  artifacts:
+    expire_in: 1 week
+    paths:
+    - artifacts/*
+    when: on_failure
+php7.3-pgsql10:
+  stage: backend
+  variables:
+    DB_VERSION: pgsql10
+    PHP_VERSION: php7.3
+    PT_VERSION: dev-yii_2.0.15
+  script: /pub/ci/backend/package.py
+  allow_failure: true
+  only:
+  - master
+  - tags
+  - merge_requests
+  when: on_success
+  artifacts:
+    expire_in: 1 week
+    paths:
+    - artifacts/*
+    when: on_failure
+frontend-build:
+  stage: frontend
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-frontend-build:node10
+  allow_failure: false
+  only:
+  - branches
+  - merge_requests
+frontend-flow:
+  stage: frontend
+  tags:
+  - dockerized
+  variables:
+    CI_THRESHOLD: "90"
+    CI_SUB_DIR: .
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-frontend-flow-coverage:node10
+  allow_failure: true
+  only:
+  - branches
+  - tags
+  - merge_requests
+frontend-license:
+  stage: frontend
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-frontend-license:latest
+  allow_failure: true
+  only:
+  - branches
+  - merge_requests
+validator-post-php:
+  stage: validator-post
+  variables:
+    CI_MODE: post
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-validator-php:latest
+  allow_failure: true
+  only:
+  - branches
+  - merge_requests
+validator-post-js:
+  stage: validator-post
+  variables:
+    CI_SUB_DIR: .
+    CI_EXTENSIONS: .js,.jsx
+    CI_MODE: post
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-validator-js:latest
+  allow_failure: true
+  only:
+  - branches
+  - merge_requests
+validator-post-css:
+  stage: validator-post
+  variables:
+    CI_SUB_DIR: .
+    CI_EXTENSIONS: .
+    CI_MODE: post
+  tags:
+  - dockerized
+  script: run.sh
+  image: cr.userstory.ru/userstory-dev/ci-validator-css:latest
+  allow_failure: true
+  only:
+  - branches
+  - merge_requests
+packages-in-projects:
+  stage: packages-in-projects
+  script: /pub/ci/packages_in_projects/packages_in_projects.py
+  allow_failure: true
+  only:
+  - master
+tag:
+  stage: tag
+  script: /pub/ci/tag/package.py
+  only:
+  - master
