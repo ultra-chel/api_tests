@@ -1,0 +1,19 @@
+class_name: ApiTester
+modules:
+  enabled:
+  - \UserstoryTemp\NewsNegativeTest\tests\support\Helpers\NewsTypeDatabaseHelper
+  - \UserstoryTemp\NewsNegativeTest\tests\support\Helpers\NewsDatabaseHelper
+  - \UserstoryTemp\NewsNegativeTest\tests\support\Helpers\CommentDatabaseHelper
+  - \UserstoryTemp\NewsNegativeTest\tests\support\Helpers\TagDatabaseHelper
+  - \UserstoryTemp\NewsNegativeTest\tests\support\Helpers\NewsTagParamDatabaseHelper
+  - \UserstoryTemp\NewsNegativeTest\tests\support\Helpers\DataTypesValueHelper
+  - \Userstory\User\Tests\Helper\UserDatabaseHelper
+
+  - PhpBrowser:
+      url: http://web/api/
+  - REST:
+      depends: PhpBrowser
+      url: http://web/api/
+  - Db
+  - Sequence
+  - Asserts
